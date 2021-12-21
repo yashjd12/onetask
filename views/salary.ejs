@@ -1,0 +1,92 @@
+<link rel="stylesheet" href="./salary.css">
+<div id="payslip">
+	<div id="title">Payslip</div>
+	<div id="scope">
+		<div class="scope-entry">
+			<div class="title">Date Today:</div>
+			<div class="value"><%= dateinfo[0].date%></div>
+		</div>
+		<div class="scope-entry">
+			<div class="title">PAY PERIOD</div>
+			<div class="value"><%= dateinfo[0].Sdate%></div>
+		</div>
+	</div>
+	<div class="content">
+		<div class="right-panel">
+			<div class="details">
+				<div class="basic-pay">
+					<div class="entry">
+						<div class="label">Basic Pay</div>
+						<div class="detail"></div>
+						<div class="rate"><%=items[0].salamount%>/Month</div>
+						<div class="amount"><%=items[0].salamount%></div>
+					</div>
+				</div>
+				<div class="salary">
+					<div class="entry">
+						<div class="label">Salary</div>
+						<div class="detail"></div>
+						<div class="rate"></div>
+						<div class="amount"></div>
+					</div>
+					
+				</div>
+				<br>
+				<div class="taxable_allowance">
+					<div class="entry">
+						<div class="label">No. of Tasks Completed</div>
+						<div class="detail"></div>
+						<div class="rate">Tasks Completed till now</div>
+						<div class="amount"><%=items[0].NoofTasks %></div>
+					</div>
+				</div>
+				<br>
+				<div class="taxable_bonus">
+					<div class="entry">
+						<div class="label">Bonus</div>
+						<div class="detail"></div>
+						<div class="rate">Bonus to be added</div>
+						<div class="amount"><%=items[0].b %></div>
+					</div>
+					
+				</div>
+				<div class="taxable_commission"></div>
+				
+				<div class="nti">
+					<div class="entry">
+						<div class="label">TAXABLE INCOME</div>
+						<div class="detail"></div>
+						<div class="rate"></div>
+						<div class="amount"><%=items[0].salamount + items[0].b %></div>
+					</div>
+				</div>
+				<div class="withholding_tax">
+					<div class="entry">
+						<div class="label">Withholding Tax</div>
+						<div class="detail"></div>
+						<div class="rate">Tax to be paid</div>
+						<div class="amount">2000</div>
+					</div>
+				</div>
+				
+				<br>
+				<div class="deductions">
+					<div class="entry">
+						<div class="label">Deductions</div>
+						<div class="detail"></div>
+						<div class="rate">Adding to EPF</div>
+						<div class="amount">500</div>
+					</div>
+				</div>
+				<div class="net_pay">
+					<div class="entry">
+						<div class="label">NET PAY</div>
+						<div class="detail"></div>
+						<div class="rate"></div>
+						<div class="amount"><%=items[0].salamount + items[0].b - 2500%></div>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+</div>
