@@ -1,4 +1,8 @@
 /* *{font-family:"Courier New", Courier, monospace} */
+.wrap {
+  display: flex;
+  justify-content: space-between;
+}
 form {
   width: 150px;
   margin: 20px auto;

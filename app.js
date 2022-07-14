@@ -19,8 +19,19 @@ var connection = mysql.createConnection({
 });
 
 
+//this empID will store the servicemen id of the person who logged in
+var empID;
+
+var clientID = 0;
+
+//this variable will store the servicemen id which will be matched for the task requested by the client
+var SiD=0;
+
 app.get("/", function(req, res) {
     res.render("index");
+    ClientID = 0;
+    empID = 0;
+    SiD = 0;
 });
 
 
@@ -68,8 +79,7 @@ app.post("/cregister", function(req,res) {
     }) 
 });
 
-//this empID will store the servicemen id of the person who logged in
-var empID;
+
 
 app.post("/logins",encoder, function(req,res) {
     var username = req.body.username
@@ -113,6 +123,7 @@ app.post("/login",encoder, function(req,res) {
         } 
         else {
             res.redirect("/login");
+            
         }
         
         res.end()
@@ -120,12 +131,9 @@ app.post("/login",encoder, function(req,res) {
 
 });
 
-var clientID = 0;
+
 var tname;
 var pincode=0;
-
-//this variable will store the servicemen id which will be matched for the task requested by the client
-var SiD=0;
 
 
 app.post("/loginc1",encoder, function(req,res) {
@@ -172,11 +180,14 @@ app.post("/task",encoder, function(req, res) {
             if(result.length>0) {
                 console.log("inside if");
                 SiD = result[0].Id;
+                PDate = req.body.date;
                 var task = {
                     TaskName : req.body.taskname,
                     ClientId : clientID,  
                     ServicemenId : SiD,
+                    Taskdate : req.body.date,
                 }
+                console.log(req.body.date);
                 var q = "insert into task set ?"
                 connection.query(q, task, function(err, result, fields) { 
                     var q2 = "update servicemen set IsOccupied = true where ServicemenID = ?";
@@ -187,6 +198,9 @@ app.post("/task",encoder, function(req, res) {
                 
             } 
             else {
+                console.log(clientID);
+                console.log(SiD);
+                
                 //the query is unsuccessful so show a dialog box
                 res.redirect("/task");
             }
@@ -198,9 +212,9 @@ app.post("/task",encoder, function(req, res) {
 // // var taskdesc;
 // var empfname;
 // var emplname;
-
+var PDate;
 app.get("/client-dashboard", function(req, res) {
-    var q = "select task.TaskName as Tname,servicemen.Firstname as Fname,servicemen.Lastname as Lname,servicemen.PhoneNo as Contact from task inner join servicemen on servicemen.ServicemenID = task.ServicemenId where task.IsCompleted = false;"
+    var q = "select task.TaskName as Tname,task.Taskdate as Tdate,servicemen.Firstname as Fname,servicemen.Lastname as Lname,servicemen.PhoneNo as Contact from task inner join servicemen on servicemen.ServicemenID = task.ServicemenId where task.IsCompleted = false;"
     connection.query(q, function(err, result, fields) {
         var q1 = "select avg(Ratings) as r from Ratings where ServicemenId = ?";
         connection.query(q1,[SiD], function(err, results, fields) { 
@@ -217,6 +231,7 @@ app.post("/client-dashboard", function(req, res) {
         ClientId: clientID,
         ServicemenId: SiD  
     }
+    
     console.log(clientID);
     console.log(SiD);
     var q = "insert into ratings set ?";
@@ -226,9 +241,20 @@ app.post("/client-dashboard", function(req, res) {
         connection.query(q1,[clientID, SiD], function(err, result, fields) {
             var q2 = "update servicemen set NoOfTasks = NoOfTasks + 1 where ServicemenID = ?";
             connection.query(q2, [SiD], function(err, result, fields) {
-                var q3 = "update servicemen set IsOccupied = false where ServicemenID = ?";
-                connection.query(q3, [SiD], function(err, result, fields) {
-                res.redirect("/client-dashboard");
+                var q4="update client set NoofServices = NoofServices + 1 where Client_no = ?";
+                connection.query(q4, [clientID], function(err, result, fields) {
+                    var q3 = "update servicemen set IsOccupied = false where ServicemenID = ?";
+                    connection.query(q3, [SiD], function(err, result, fields) {
+                        var pay = {
+                            PaymentDate: PDate,
+                            Clientno : clientID,
+                        }
+                        var q4 = "insert into payment set ?";
+                        connection.query(q4, pay, function(err, result, fields) {
+                            console.log(result);
+                            res.redirect("/client-dashboard");
+                        })
+                    })
                 })
             })
         })
@@ -244,7 +270,7 @@ app.get("/client-previous-tasks", function(req, res) {
 })
 
 app.get("/emp-dashboard", function(req, res) {
-    var q = "select task.TaskName as Tname,client.Firstname as Fname,client.Lastname as Lname,client.Address1 as address,client.pincode as pincode,client.PhoneNo as Contact from task inner join client on client.Client_no = task.ClientId where task.isCompleted = false;"
+    var q = "select task.TaskName as Tname,task.Taskdate as Tdate,client.Firstname as Fname,client.Lastname as Lname,client.Address1 as address,client.pincode as pincode,client.PhoneNo as Contact from task inner join client on client.Client_no = task.ClientId where task.isCompleted = false;"
     connection.query(q, function(err, result, fields) {
         res.render("empdashboard", {items: result});
     })
@@ -255,10 +281,22 @@ app.post("/emp-dashboard", function(req, res) {
     connection.query(q,[clientID, SiD], function(err, result, fields) {
         var q1 = "update servicemen set NoOfTasks = NoOfTasks + 1 where ServicemenID = ?";
             connection.query(q1, [SiD], function(err, result, fields) {
-                var q2 = "update servicemen set IsOccupied = false where ServicemenID = ?";
-                connection.query(q2, [SiD], function(err, result, fields) {
-                res.redirect("/emp-dashboard");
-                })
+                var q3="update client set NoofServices = NoofServices + 1 where Client_no = ?";
+                connection.query(q3, [clientID], function(err, result, fields) {
+                    console.log(result);
+                    var q2 = "update servicemen set IsOccupied = false where ServicemenID = ?";
+                    connection.query(q2,[SiD], function(err, result, fields) {
+                        var pay = {
+                            PaymentDate: PDate,
+                            Clientno : clientID,
+                        }
+                        var q4 = "insert into payment set ?";
+                        connection.query(q4, pay, function(err, result, fields) {
+                            console.log(result);
+                            res.redirect("/emp-dashboard");
+                        })
+                    })
+              })
             })
     })
 });
